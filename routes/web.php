@@ -13,6 +13,7 @@ Route::get('/public', [SurveyController::class,'index']);
 Route::post('/public', [SurveyController::class,'saveAnswer'])->name('entries.saveAnswer');
 
 
+Route::view('/success/survey', 'survey.message')->name('survey.success');
 
 
 Route::get('/dashboard', function () {
