@@ -42,7 +42,7 @@ class SurveyController extends Controller
     }
 
     protected function survay(){
-        return Survey::where('name',"=","Cat Population Survey")->first();
+        return Survey::all()->random();
     }
 
 
@@ -53,18 +53,31 @@ class SurveyController extends Controller
      */
     public function store(Request $request)
     {
-        $question = $request->content;
-        $typeSurvey = 'number';
+        $nameSurvey = $request->content;
+        $question = $request->question;
+        $typeSurvey = $request->typeQuestion;
+        $options = $request->options;
+
+        // Decodificar las opciones si existen
+        $options = json_decode($options, true);
         
         //Creacion de encuesta
-        $survey = Survey::create(['name' => 'Cat Population Survey', 'settings' => ['accept-guest-entries' => true]]);
+        $survey = Survey::create(['name' => $nameSurvey, 'settings' => ['accept-guest-entries' => true]]);
 
-        $survey->questions()->create([
-            'content' => $question,
-            'type' => 'number',
-            'options' => ['1', '2', '5'],
-            'rules' => ['numeric', 'min:0']
-        ]);
+
+        if($typeSurvey == 'radio'){
+            $survey->questions()->create([
+                'content' => $question,
+                'type' => $typeSurvey,
+                'options' => $options,
+            ]);
+        }elseif($typeSurvey == 'numeric'){
+            $survey->questions()->create([
+                'content' => $question,
+                'type' => $typeSurvey,
+                'rules' => ['numeric', 'min:0']
+            ]);
+        }
 
         return redirect('/public');
     }
