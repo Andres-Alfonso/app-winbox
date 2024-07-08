@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewQuestion;
 use Illuminate\Http\Request;
-use MattDaneshvar\Survey\Models\Survey;
+use Illuminate\Support\Facades\Event;
 use MattDaneshvar\Survey\Models\Entry;
-use MattDaneshvar\Survey\Contracts\Answer;
+use MattDaneshvar\Survey\Models\Survey;
 use MattDaneshvar\Survey\Models\Question;
+use MattDaneshvar\Survey\Contracts\Answer;
 
 class SurveyController extends Controller
 {
@@ -15,11 +17,9 @@ class SurveyController extends Controller
      */
     public function index()
     {
-        //$survey = $this->survay();
         $survey = $this->survay();
 
-
-        return view('list', ['survey'=> $survey]);
+        return view('list', ['survey' => $survey]);
     }
 
     /**
@@ -30,18 +30,42 @@ class SurveyController extends Controller
         return view('survey.new');
     }
 
+    /**
+     * Save survey answers.
+     */
     public function saveAnswer(Request $request)
     {
         $survey = $this->survay();
-
         $answers = $this->validate($request, $survey->rules);
         
         (new Entry)->for($survey)->fromArray($answers)->push();
 
-        return back()->with('success','Gracias por tu respuesta.');
+        return back()->with('success', 'Gracias por tu respuesta.');
     }
 
-    protected function survay(){
+    /**
+     * Get a random survey question.
+     */
+    /*public function getRandomQuestion()
+    {
+        $survey = $this->survay();
+        Event::dispatch(new NewQuestion($survey));
+
+        return response()->json($survey);
+    }*/
+
+    public function getRandomQuestion()
+    {
+        $question = Question::inRandomOrder()->first();
+        event(new NewQuestion($question));
+        return response()->json($question);
+    }
+
+    /**
+     * Retrieve a random survey.
+     */
+    protected function survay()
+    {
         return Survey::all()->random();
     }
 
@@ -57,19 +81,23 @@ class SurveyController extends Controller
         $question = $request->question;
         $typeSurvey = $request->typeQuestion;
         $options = $request->options;
+        $correctOption = $request->correctOption;
 
         // Decodificar las opciones si existen
         $options = json_decode($options, true);
-        
+
         //Creacion de encuesta
         $survey = Survey::create(['name' => $nameSurvey, 'settings' => ['accept-guest-entries' => true]]);
 
 
         if($typeSurvey == 'radio'){
-            $survey->questions()->create([
+
+            Question::create([
+                'survey_id' => $survey->id,
                 'content' => $question,
                 'type' => $typeSurvey,
                 'options' => $options,
+                'correct_answer' => $correctOption,
             ]);
         }elseif($typeSurvey == 'numeric'){
             $survey->questions()->create([

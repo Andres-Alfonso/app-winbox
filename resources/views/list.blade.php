@@ -28,36 +28,6 @@
             color: green;
             margin-bottom: 20px;
         }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            display: block;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 1rem;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body>
@@ -74,6 +44,24 @@
         @csrf
         @include('survey::standard', ['survey' => $survey])
     </form>
+
+    <div id="question"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
+<script>
+
+        fetch('/random-question')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('question').innerText = data.title; // Assuming your survey has a 'title' field
+            });
+        
+            Echo.channel('questions')
+                .listen('NewQuestion', (e) => {
+                    console.log('Nueva pregunta recibida:', e.question);
+                    // Actualiza la interfaz de usuario con la nueva pregunta
+                });
+            
+</script>
