@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SurveyController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/random-question', [SurveyController::class, 'getRandomQuestion']);
+
 Route::get('/', function () {
     return view('welcome');
 });
